@@ -1,39 +1,28 @@
-import React, { useState } from "react";
-import { auth } from "../firebase";
+import { useState } from 'react';
+import { auth } from '../firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
 
-function Login() {
-    const [email, setEmail] = useState("");
-    const [senha, setSenha] = useState("");
-    const [mensagem, setMensagem] = useState("");
+export default function Login() {
+    const [email, setEmail] = useState('');
+    const [senha, setSenha] = useState('');
+    const navigate = useNavigate();
 
-    const logarUsuario = async () => {
+    const login = async () => {
         try {
-            await auth.signInWithEmailAndPassword(email, senha);
-            setMensagem("Login realizado com sucesso!");
-        } catch (erro) {
-            setMensagem("Erro ao fazer login: " + erro.message);
+            await signInWithEmailAndPassword(auth, email, senha);
+            navigate('/principal');
+        } catch {
+            alert('Usuário não está cadastrado ou senha incorreta');
         }
     };
 
     return (
         <div>
-            <h2>Login</h2>
-            <input
-                type="email"
-                placeholder="Digite seu e-mail"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-            /><br />
-            <input
-                type="password"
-                placeholder="Digite sua senha"
-                value={senha}
-                onChange={(e) => setSenha(e.target.value)}
-            /><br />
-            <button onClick={logarUsuario}>Entrar</button>
-            <p>{mensagem}</p>
+            <h1>Login</h1>
+            <input placeholder="Email" onChange={e => setEmail(e.target.value)} /><br />
+            <input type="password" placeholder="Senha" onChange={e => setSenha(e.target.value)} /><br />
+            <button onClick={login}>Entrar</button>
         </div>
     );
 }
-
-export default Login;

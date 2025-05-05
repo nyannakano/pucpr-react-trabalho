@@ -1,41 +1,44 @@
-import React, { useState } from "react";
-import { auth } from "../firebase";
+import { useState } from 'react';
+import { auth, db } from '../firebase';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
 
-function Cadastro() {
-    // Estados para armazenar e-mail e senha
-    const [email, setEmail] = useState("");
-    const [senha, setSenha] = useState("");
-    const [mensagem, setMensagem] = useState("");
+export default function Cadastro() {
+    const [form, setForm] = useState({ email: '', senha: '', nome: '', sobrenome: '', nascimento: '' });
+    const [mensagem, setMensagem] = useState('');
+    const navigate = useNavigate();
 
-    // Função que lida com o cadastro de usuários
-    const cadastrarUsuario = async () => {
+    const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+
+    const cadastrar = async () => {
         try {
-            await auth.createUserWithEmailAndPassword(email, senha);
-            setMensagem("Usuário cadastrado com sucesso!");
-        } catch (erro) {
-            setMensagem("Erro ao cadastrar: " + erro.message);
+            const { user } = await createUserWithEmailAndPassword(auth, form.email, form.senha);
+            await setDoc(doc(db, 'usuarios', user.uid), {
+                uid: user.uid,
+                nome: form.nome,
+                sobrenome: form.sobrenome,
+                nascimento: form.nascimento,
+                email: form.email
+            });
+
+            setMensagem('✅ Cadastro realizado com sucesso! Redirecionando...');
+            setTimeout(() => navigate('/login'), 2000); // redireciona após 2 segundos
+        } catch (e) {
+            setMensagem('❌ Erro ao cadastrar: ' + e.message);
         }
     };
 
     return (
         <div>
-            <h2>Cadastro</h2>
-            <input
-                type="email"
-                placeholder="Digite seu e-mail"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-            /><br />
-            <input
-                type="password"
-                placeholder="Digite sua senha"
-                value={senha}
-                onChange={(e) => setSenha(e.target.value)}
-            /><br />
-            <button onClick={cadastrarUsuario}>Cadastrar</button>
-            <p>{mensagem}</p>
+            <h1>Cadastro</h1>
+            <input name="email" placeholder="Email" onChange={handleChange} /><br />
+            <input name="senha" type="password" placeholder="Senha" onChange={handleChange} /><br />
+            <input name="nome" placeholder="Nome" onChange={handleChange} /><br />
+            <input name="sobrenome" placeholder="Sobrenome" onChange={handleChange} /><br />
+            <input name="nascimento" type="date" onChange={handleChange} /><br />
+            <button onClick={cadastrar}>Cadastrar</button>
+            {mensagem && <p style={{ color: mensagem.includes('Erro') ? 'red' : 'green' }}>{mensagem}</p>}
         </div>
     );
 }
-
-export default Cadastro;
