@@ -6,7 +6,6 @@ function Login() {
     const [senha, setSenha] = useState("");
     const [mensagem, setMensagem] = useState("");
 
-    // Função de login de usuário
     const logarUsuario = async () => {
         try {
             await auth.signInWithEmailAndPassword(email, senha);
